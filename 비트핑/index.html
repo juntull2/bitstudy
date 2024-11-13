@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BitStudy</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <!-- 헤더 영역 -->
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <a href="./index.html" class="logo">BitStudy</a>
+            </div>
+            <ul class="nav-links no-wrap">
+                <li class="dropdown">
+                    <a href="#">이론수업</a>
+                    <div class="dropdown-content">
+                        <ul>
+                            <li><a href="#">HTML/CSS</a></li>
+                            <li><a href="#">JavaScript</a></li>
+                            <li><a href="#">React</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="dropdown">
+                    <a href="#">오프라인강좌</a>
+                    <div class="dropdown-content">
+                        <ul>
+                            <li><a href="#">강남</a></li>
+                            <li><a href="#">부천</a></li>
+                            <li><a href="#">인천</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="dropdown">
+                    <a href="#">게임</a>
+                    <div class="dropdown-content">
+                        <ul>
+                            <li><a href="./게임/테트리스.html">테트리스</a></li>
+                            <li><a href="./게임/.html">한컴타자연습</a></li>
+                            <li><a href="./게임/노노그램.html">노노그램</a></li>
+                        </ul>
+                    </div>
+                </li>
+                <li class="dropdown">
+                    <a href="#">포트폴리오</a>
+                    <div class="dropdown-content">
+                        <ul>
+                            <li><a href="#">웹사이트</a></li>
+                            <li><a href="#">모바일앱</a></li>
+                            <li><a href="#">게임</a></li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+            <div class="auth-links">
+                <a href="./login.html">로그인</a>
+                <span>|</span>
+                <a href="./join.html">회원가입</a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 메인 섹션 -->
+    <main class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>비트스터디 <span class="highlight">OPEN</span></h1>
+                <p>비트스터디는 누구나 쉽게</p>
+                <p>기초부터 공부 할 수 있는</p>
+                <p>코딩 교육 플랫폼입니다.</p>
+            </div>
+            <div class="hero-image">
+                <div class="slider">
+                    <div class="slide-track">
+                        <img src="./img/대상혁.png" alt="신상혁" class="slide">
+                        <img src="./img/기습숭배.jpg" alt="슬라이드2" class="slide">
+                        <img src="./img/법규.jpg" alt="슬라이드3" class="slide">
+                    </div>
+                    <div class="slider-nav">
+                        <button class="prev-btn">❮</button>
+                        <button class="next-btn">❯</button>
+                    </div>
+                    <div class="slider-dots">
+                        <span class="dot active"></span>
+                        <span class="dot"></span>
+                        <span class="dot"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 수업 콘텐츠 섹션 -->
+    <section class="content-section">
+        <h2 class="section-title">진행중인 오프라인 강좌</h2>
+        <div class="course-container">
+            <!-- 강좌 카드 1 -->
+            <div class="course-card">
+                <div class="card-header">
+                    <h3>디지털컨버전스 A30-13</h3>
+                    <button class="expand-btn">+</button>
+                </div>
+                <ul class="file-list">
+                    <li>
+                        <a href="#">Ex14_5_게시판.jsp</a>
+                        <span class="date">2024.11.05</span>
+                    </li>
+                    <li>
+                        <a href="#">Ex14_4_로그인_form.jsp</a>
+                        <span class="date">2024.11.05</span>
+                    </li>
+                    <li>
+                        <a href="#">Ex14_3_회원가입_form.jsp</a>
+                        <span class="date">2024.11.05</span>
+                    </li>
+                    <li>
+                        <a href="#">Ex14_2_레이아웃1.jsp</a>
+                        <span class="date">2024.11.05</span>
+                    </li>
+                    <li>
+                        <a href="#">Ex14_1_회원가입_컨트롤러.java</a>
+                        <span class="date">2024.11.05</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 강좌 카드 2 -->
+            <div class="course-card">
+                <div class="card-header">
+                    <h3>디지털컨버전스 A30-2</h3>
+                    <button class="expand-btn">+</button>
+                </div>
+                <ul class="file-list">
+                    <li>
+                        <a href="#">project-board - (글쓰기 및 댓글 완료 (아...</a>
+                        <span class="date">2024.07.01</span>
+                    </li>
+                    <li>
+                        <a href="#">자원할당.xlsx</a>
+                        <span class="date">2024.07.05</span>
+                    </li>
+                    <li>
+                        <a href="#">App.css</a>
+                        <span class="date">2024.06.25</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 강좌 카드 3 -->
+            <div class="course-card">
+                <div class="card-header">
+                    <h3>디지털컨버전스 A30 종일반</h3>
+                    <button class="expand-btn">+</button>
+                </div>
+                <ul class="file-list">
+                    <li>
+                        <a href="#">이력서 당첨점3.txt</a>
+                        <span class="date">2024.01.03</span>
+                    </li>
+                    <li>
+                        <a href="#">이력서 당첨점2.txt</a>
+                        <span class="date">2023.12.28</span>
+                    </li>
+                    <li>
+                        <a href="#">반달월문예3.pdf</a>
+                        <span class="date">2023.12.28</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- 지식 공유하기 섹션 -->
+    <section class="share-section">
+        <h2>지식 공유 하기</h2>
+        <p>내 지식을 많은 사람들에게 공유해보세요</p>
+        <button class="share-button">지식공유하기</button>
+    </section>
+
+    <!-- 푸터 -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="contact">
+                <h3>Contact</h3>
+                <p>이메일: goodjob412@gmail.com</p>
+            </div>
+            <div class="about">
+                <h3>About</h3>
+                <p>비트스터디는 자유롭고 개방된 컨텐츠를 지향하며, 누구나 쉽고 재미있게 프로그래밍을 배울 수 있도록 하는 서비스 입니다.</p>
+                <p>©BITSTUDY. ALL RIGHTS RESERVED</p>
+            </div>
+        </div>
+    </footer>
+    <script src="main.js"></script>
+</body>
+</html>

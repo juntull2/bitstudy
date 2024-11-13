@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>노노그램</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+
+        .controls {
+            margin: 30px auto 15px;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            max-width: 600px;
+        }
+
+        .controls button {
+            padding: 8px 16px;
+            font-size: 15px;
+            font-weight: bold;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            min-width: 120px;
+        }
+
+        .controls button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .controls button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            grid-template-rows: auto 1fr;
+            gap: 0;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-corner {
+            width: 100px;
+            height: 100px;
+        }
+
+        .row-hints {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            padding-right: 10px;
+        }
+
+        .row-hint {
+            display: flex;
+            justify-content: flex-end;
+            gap: 5px;
+            align-items: center;
+            height: 30px;
+        }
+
+        .col-hints {
+            display: flex;
+            justify-content: space-around;
+            padding-bottom: 10px;
+        }
+
+        .col-hint {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 2px;
+            width: 30px;
+            height: 100px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1px;
+            background-color: #ccc;
+            user-select: none;
+        }
+
+        .cell {
+            width: 30px;
+            height: 30px;
+            background-color: white;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .cell.filled {
+            background-color: #333;
+        }
+
+        .cell.marked::after {
+            content: "X";
+            color: #ff0000;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            font-size: 20px;
+            pointer-events: none;
+        }
+
+        .cell.question::after {
+            content: "?";
+            color: #0000ff;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            font-size: 20px;
+            pointer-events: none;
+        }
+
+        .difficulty-info {
+            margin: 20px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .status {
+            margin-top: 0px;
+            padding: 10px;
+            font-weight: bold;
+        }
+
+        .hint-number {
+            font-size: 12px;
+            margin: 2px;
+        }
+
+        .hint-number.blue {
+            color: blue;
+        }
+
+        .hint-number.brown {
+            color: brown;
+        }
+        .message {
+            text-align: center;
+            margin: 0 auto 15px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #4CAF50;
+            padding: 5px;
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button onclick="setDifficulty(5)">쉬움 (5x5)</button>
+        <button onclick="setDifficulty(10)">보통 (10x10)</button>
+        <button onclick="setDifficulty(15)">어려움 (15x15)</button>
+        <button onclick="setDifficulty(20)">전문가 (20x20)</button>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <div class="game-container">
+        <div class="empty-corner"></div>
+        <div id="colHints" class="col-hints"></div>
+        <div id="rowHints" class="row-hints"></div>
+        <div id="grid" class="grid"></div>
+    </div>
+
+    <div class="controls">
+        <button onclick="checkSolution()">정답 확인</button>
+        <button onclick="resetGrid()">리셋</button>
+        <button onclick="showSolution()">해답 보기</button>
+    </div>
+
+    <div class="difficulty-info">
+        동일 난이도를 한번 더 누르면 퍼즐이 초기화됩니다<br>
+        왼쪽 마우스 클릭으로 셀을 채우거나 비울 수 있습니다.<br>
+        오른쪽 마우스 클릭으로 셀을 마크하거나 물음표로 표시할 수 있습니다.
+    </div>
+
+    <script>
+        let currentSize = 10;
+        let grid = [];
+        let solution = [];
+        let rowHints = [];
+        let colHints = [];
+        
+        let isDragging = false;
+        let dragStartRow = null;
+        let dragStartCol = null;
+        let dragDirection = null;
+        let dragValue = null;
+        let tempGrid = null;
+        let lastClickTime = 0;
+
+        function initializeGame(size) {
+            currentSize = size;
+            grid = Array(size).fill().map(() => Array(size).fill(0));
+            generatePuzzle();
+            updateDisplay();
+
+            const gridElement = document.getElementById('grid');
+            gridElement.addEventListener('mousedown', startDrag);
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('mousemove', handleDrag);
+            
+            gridElement.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                return false;
+            });
+        }
+
+        function startDrag(e) {
+            if (!e.target.classList.contains('cell')) return;
+            e.preventDefault();
+            
+            if (e.button === 2) {
+                const currentTime = Date.now();
+                if (currentTime - lastClickTime < 100) {
+                    return;
+                }
+                lastClickTime = currentTime;
+            }
+            
+            const row = parseInt(e.target.dataset.row);
+            const col = parseInt(e.target.dataset.col);
+            
+            isDragging = true;
+            dragStartRow = row;
+            dragStartCol = col;
+            dragDirection = null;
+            
+            tempGrid = grid.map(row => [...row]);
+            
+            if (e.button === 2) {
+                const currentValue = grid[row][col];
+                if (currentValue === 0 || currentValue === 1) dragValue = 2;
+                else if (currentValue === 2) dragValue = 3;
+                else dragValue = 0;
+            } else {
+                dragValue = grid[row][col] === 1 ? 0 : 1;
+            }
+            
+            grid[row][col] = dragValue;
+            updateDisplay();
+        }
+
+        function handleDrag(e) {
+            if (!isDragging) return;
+            
+            let targetCell;
+            if (e.type === 'mousemove') {
+                targetCell = e.target.closest('.cell');
+            } else if (e.type === 'touchmove') {
+                const touch = e.touches[0];
+                const element = document.elementFromPoint(touch.clientX, touch.clientY);
+                targetCell = element?.closest('.cell');
+            }
+            
+            if (!targetCell) return;
+            
+            const row = parseInt(targetCell.dataset.row);
+            const col = parseInt(targetCell.dataset.col);
+            
+            if (!dragDirection) {
+                const rowDiff = Math.abs(row - dragStartRow);
+                const colDiff = Math.abs(col - dragStartCol);
+                
+                if (rowDiff > 0 || colDiff > 0) {
+                    if (rowDiff > colDiff) {
+                        dragDirection = 'col';
+                    } else {
+                        dragDirection = 'row';
+                    }
+                }
+            }
+            
+            grid = tempGrid.map(row => [...row]);
+            grid[dragStartRow][dragStartCol] = dragValue;
+            
+            if (dragDirection === 'row' && row === dragStartRow) {
+                const start = Math.min(dragStartCol, col);
+                const end = Math.max(dragStartCol, col);
+                for (let c = start; c <= end; c++) {
+                    grid[row][c] = dragValue;
+                }
+            } else if (dragDirection === 'col' && col === dragStartCol) {
+                const start = Math.min(dragStartRow, row);
+                const end = Math.max(dragStartRow, row);
+                for (let r = start; r <= end; r++) {
+                    grid[r][col] = dragValue;
+                }
+            }
+            
+            updateDisplay();
+        }
+
+        function endDrag() {
+            if (!isDragging) return;
+            
+            if (dragDirection === 'row') {
+                checkLineCompletion(dragStartRow, true);
+            } else if (dragDirection === 'col') {
+                checkLineCompletion(dragStartCol, false);
+            } else {
+                checkLineCompletion(dragStartRow, true);
+                checkLineCompletion(dragStartCol, false);
+            }
+            
+            isDragging = false;
+            dragStartRow = null;
+            dragStartCol = null;
+            dragDirection = null;
+            dragValue = null;
+            tempGrid = null;
+            
+            updateDisplay();
+        }
+
+        function toggleCell(row, col) {
+            moveHistory.push({
+                row: row,
+                col: col,
+                previousState: grid[row][col]
+            });
+            
+            grid[row][col] = grid[row][col] === 1 ? 0 : 1;
+            
+            checkLineCompletion(row, true);
+            checkLineCompletion(col, false);
+            updateDisplay();
+        }
+
+        function markCell(row, col) {
+            moveHistory.push({
+                row: row,
+                col: col,
+                previousState: grid[row][col]
+            });
+            
+            if (grid[row][col] === 0 || grid[row][col] === 1) grid[row][col] = 2;
+            else if (grid[row][col] === 2) grid[row][col] = 3;
+            else if (grid[row][col] === 3) grid[row][col] = 0;
+            
+            updateDisplay();
+        }
+
+        function checkLineCompletion(lineIndex, isRow) {
+            const line = isRow ? grid[lineIndex] : grid.map(row => row[lineIndex]);
+            const targetHints = isRow ? rowHints[lineIndex] : colHints[lineIndex];
+            const currentHints = getHints(line);
+            
+            if (JSON.stringify(currentHints) === JSON.stringify(targetHints)) {
+                if (isRow) {
+                    for (let j = 0; j < currentSize; j++) {
+                        if (grid[lineIndex][j] === 0) {
+                            grid[lineIndex][j] = 2;
+                        }
+                    }
+                } else {
+                    for (let i = 0; i < currentSize; i++) {
+                        if (grid[i][lineIndex] === 0) {
+                            grid[i][lineIndex] = 2;
+                        }
+                    }
+                }
+                updateDisplay();
+            }
+        }
+
+        function getHints(line) {
+            const hints = [];
+            let count = 0;
+            
+            for (let i = 0; i <= line.length; i++) {
+                if (i < line.length && line[i] === 1) {
+                    count++;
+                } else if (count > 0) {
+                    hints.push(count);
+                    count = 0;
+                }
+            }
+            
+            return hints.length ? hints : [0];
+        }
+
+        function updateDisplay() {
+            const gridElement = document.getElementById('grid');
+            gridElement.style.gridTemplateColumns = `repeat(${currentSize}, 30px)`;
+            gridElement.innerHTML = '';
+
+            for (let i = 0; i < currentSize; i++) {
+                for (let j = 0; j < currentSize; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = i;
+                    cell.dataset.col = j;
+                    
+                    if (grid[i][j] === 1) {
+                        cell.classList.add('filled');
+                    } else if (grid[i][j] === 2) {
+                        cell.classList.add('marked');
+                    } else if (grid[i][j] === 3) {
+                        cell.classList.add('question');
+                    }
+
+                    cell.addEventListener('click', () => toggleCell(i, j));
+                    cell.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        markCell(i, j);
+                    });
+                    
+                    gridElement.appendChild(cell);
+                }
+            }
+
+            updateHints();
+        }
+
+        function updateHints() {
+            const rowHintsElement = document.getElementById('rowHints');
+            rowHintsElement.innerHTML = '';
+            
+            rowHints.forEach((hints, i) => {
+                const hintDiv = document.createElement('div');
+                hintDiv.className = 'row-hint';
+                hints.forEach(hint => {
+                    const hintSpan = document.createElement('span');
+                    hintSpan.className = 'hint-number brown';
+                    hintSpan.textContent = hint;
+                    hintDiv.appendChild(hintSpan);
+                });
+                rowHintsElement.appendChild(hintDiv);
+            });
+
+            const colHintsElement = document.getElementById('colHints');
+            colHintsElement.innerHTML = '';
+            
+            colHints.forEach(hints => {
+                const hintDiv = document.createElement('div');
+                hintDiv.className = 'col-hint';
+                hints.forEach(hint => {
+                    const hintSpan = document.createElement('span');
+                    hintSpan.className = 'hint-number blue';
+                    hintSpan.textContent = hint;
+                    hintDiv.appendChild(hintSpan);
+                });
+                colHintsElement.appendChild(hintDiv);
+            });
+        }
+
+        function undoMove() {
+            if (moveHistory.length > 0) {
+                const lastMove = moveHistory.pop();
+                grid[lastMove.row][lastMove.col] = lastMove.previousState;
+                updateDisplay();
+            }
+        }
+
+        function checkSolution() {
+            const correct = grid.every((row, i) => 
+                row.every((cell, j) => cell === solution[i][j])
+            );
+            
+            document.getElementById('status').textContent = 
+                correct ? '정답입니다!' : '틀렸습니다. 다�� 시도해보세���.';
+        }
+
+        function showSolution() {
+            grid = solution.map(row => [...row]);
+            updateDisplay();
+        }
+
+        function resetGrid() {
+            grid = Array(currentSize).fill().map(() => Array(currentSize).fill(0));
+            moveHistory = [];
+            updateDisplay();
+            document.getElementById('status').textContent = '';
+        }
+
+        function setDifficulty(size) {
+            // 기존 게임 초기화
+            currentSize = size;
+            grid = Array(size).fill().map(() => Array(size).fill(0));
+            
+            // 새로운 퍼즐 생성
+            generatePuzzle();
+            
+            // 게임 초기화 및 화면 업데이트
+            initializeGame(size);
+            
+            // 줌 리셋
+            currentZoom = 1.0;
+            updateZoom();
+            
+            // 메시지 초기화
+            const messageElement = document.getElementById('message');
+            messageElement.textContent = '';
+        }
+
+        function generatePuzzle() {
+            // 기존 solution 배열 초기화
+            solution = Array(currentSize).fill().map(() => Array(currentSize).fill(0));
+            
+            // 랜덤하게 새로운 퍼즐 생성
+            for (let i = 0; i < currentSize; i++) {
+                for (let j = 0; j < currentSize; j++) {
+                    solution[i][j] = Math.random() < 0.5 ? 0 : 1;
+                }
+            }
+            
+            // 힌트 계산
+            calculateHints();
+            
+            // 게임 그리드 초기화
+            grid = Array(currentSize).fill().map(() => Array(currentSize).fill(0));
+        }
+
+        function calculateHints() {
+            // 가로 힌트 계산
+            rowHints = [];
+            for (let i = 0; i < currentSize; i++) {
+                let hints = [];
+                let count = 0;
+                for (let j = 0; j < currentSize; j++) {
+                    if (solution[i][j] === 1) {
+                        count++;
+                    } else if (count > 0) {
+                        hints.push(count);
+                        count = 0;
+                    }
+                }
+                if (count > 0) {
+                    hints.push(count);
+                }
+                if (hints.length === 0) {
+                    hints.push(0);
+                }
+                rowHints.push(hints);
+            }
+
+            // 세로 힌트 계산
+            colHints = [];
+            for (let j = 0; j < currentSize; j++) {
+                let hints = [];
+                let count = 0;
+                for (let i = 0; i < currentSize; i++) {
+                    if (solution[i][j] === 1) {
+                        count++;
+                    } else if (count > 0) {
+                        hints.push(count);
+                        count = 0;
+                    }
+                }
+                if (count > 0) {
+                    hints.push(count);
+                }
+                if (hints.length === 0) {
+                    hints.push(0);
+                }
+                colHints.push(hints);
+            }
+        }
+
+        function checkCompletion() {
+            let isComplete = true;
+            for (let i = 0; i < currentSize; i++) {
+                for (let j = 0; j < currentSize; j++) {
+                    if ((grid[i][j] === 1) !== (solution[i][j] === 1)) {
+                        isComplete = false;
+                        break;
+                    }
+                }
+                if (!isComplete) break;
+            }
+            
+            const messageElement = document.getElementById('message');
+            if (isComplete) {
+                messageElement.textContent = "정답입니다!";
+                messageElement.style.color = "#4CAF50";
+            } else {
+                messageElement.textContent = "";
+            }
+        }
+
+        initializeGame(10);
+    </script>
+</body>
+</html>

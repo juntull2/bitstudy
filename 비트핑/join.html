@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BITSTUDY - 비트스터디</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <!-- Register Form -->
+    <form class="form-container" onsubmit="return validateForm(event)">
+        <div class="logo-container">
+            <div class="logo-text">BITSTUDY</div>
+            <div class="korean-text">비트스터디</div>
+        </div>
+
+        <div class="section-title">개인정보</div>
+        
+        <div class="input-group">
+            <input type="email" placeholder="아이디를 입력하세요" name="id" id="userId" onblur="checkEmail()">
+        </div>
+
+        <div class="input-group">
+            <input type="text" placeholder="비밀번호를 입력하세요" name="pw">
+        </div>
+
+        <div class="input-group">
+            <input type="text" placeholder="비밀번호 재확인" name="pwCheck">
+        </div>
+
+        <div class="input-group">
+            <input type="text" placeholder="이름을 입력하세요" name="name">
+        </div>
+
+        <div class="input-group email-group">
+            <input type="text" placeholder="이메일" name="emailId">
+            <span class="at-symbol">@</span>
+            <select name="emailDomain" onchange="handleDomainChange(this)">
+                <option value="">선택</option>
+                <option value="naver.com">naver.com</option>
+                <option value="gmail.com">gmail.com</option>
+                <option value="daum.net">daum.net</option>
+                <option value="hanmail.net">hanmail.net</option>
+                <option value="direct">직접입력</option>
+            </select>
+            <input type="text" name="emailDomainDirect" style="display: none;" placeholder="직접입력">
+        </div>
+        
+        <button class="submit-btn">확인</button>
+    </form>
+
+    <script>
+        function checkEmail() {
+            const emailInput = document.getElementById('userId');
+            const email = emailInput.value;
+            
+            if (email.trim() !== '' && !email.includes('@')) {
+                alert('아이디에 @를 포함해주세요');
+                emailInput.value = '';
+            }
+        }
+
+        function handleDomainChange(select) {
+            const directInput = document.querySelector('input[name="emailDomainDirect"]');
+            if (select.value === 'direct') {
+                directInput.style.display = 'block';
+                directInput.value = '';
+            } else {
+                directInput.style.display = 'none';
+                directInput.value = '';
+            }
+        }
+
+        function validateForm(event) {
+            event.preventDefault();
+            
+            const userId = document.querySelector('input[name="id"]').value;
+            const password = document.querySelector('input[name="pw"]').value;
+            const passwordCheck = document.querySelector('input[name="pwCheck"]').value;
+            const name = document.querySelector('input[name="name"]').value;
+            const emailId = document.querySelector('input[name="emailId"]').value;
+            const emailDomain = document.querySelector('select[name="emailDomain"]').value;
+            const emailDomainDirect = document.querySelector('input[name="emailDomainDirect"]').value;
+
+            if (!userId.trim()) {
+                alert('아이디를 입력해주세요');
+                return false;
+            }
+            if (!userId.includes('@')) {
+                alert('아이디에 @를 포함해주세요');
+                return false;
+            }
+            if (!password.trim()) {
+                alert('비밀번호를 입력해주세요');
+                return false;
+            }
+            if (password !== passwordCheck) {
+                alert('비밀번호가 일치하지 않습니다');
+                return false;
+            }
+            if (!name.trim()) {
+                alert('이름을 입력해주세요');
+                return false;
+            }
+            if (!emailId.trim()) {
+                alert('이메일을 입력해주세요');
+                return false;
+            }
+            if (!emailDomain) {
+                alert('이메일 도메인을 선택해주세요');
+                return false;
+            }
+            if (emailDomain === 'direct' && !emailDomainDirect.trim()) {
+                alert('이메일 도메인을 입력해주세요');
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+</body>
+</html>
